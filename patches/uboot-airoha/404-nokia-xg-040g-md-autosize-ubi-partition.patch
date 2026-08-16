@@ -1,0 +1,20 @@
+From: OpenWrt community <openwrt-devel@lists.openwrt.org>
+Subject: [PATCH] airoha: nokia xg-040g-md: let the ubi partition fill the chip
+
+The board DTS hardcodes the ubi partition size to 0xffe0000, which assumes
+a 256 MiB SPI NAND. A size of 0 makes add_mtd_partitions_of() compute
+"master size - offset" instead, so the same bootloader works with any
+SPI NAND size the board happens to be fitted with.
+
+--- a/dts/upstream/src/arm64/airoha/an7581-nokia-xg-040g-md.dts
++++ b/dts/upstream/src/arm64/airoha/an7581-nokia-xg-040g-md.dts
+@@ -85,7 +85,8 @@
+ 
+ 		partition@20000 {
+ 			label = "ubi";
+-			reg = <0x20000 0xffe0000>;
++			/* size 0: extend up to the end of the flash chip */
++			reg = <0x20000 0x0>;
+ 		};
+ 	};
+ };

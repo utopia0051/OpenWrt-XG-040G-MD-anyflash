@@ -1,0 +1,26 @@
+diff --git a/target/linux/airoha/dts/an758x-nokia_xg-040g-ubi-parts.dtsi b/target/linux/airoha/dts/an758x-nokia_xg-040g-ubi-parts.dtsi
+index 7a72632..c604030 100644
+--- a/target/linux/airoha/dts/an758x-nokia_xg-040g-ubi-parts.dtsi
++++ b/target/linux/airoha/dts/an758x-nokia_xg-040g-ubi-parts.dtsi
+@@ -9,7 +9,11 @@
+ &partitions {
+ 	partition@0_all {
+ 		label = "all_flash";
+-		reg = <0x0 0x10000000>;
++		/*
++		 * Size 0 means "up to the end of the chip", so the same DTS
++		 * works with any SPI-NAND size the board is fitted with.
++		 */
++		reg = <0x0 0x0>;
+ 		read-only;
+ 	};
+ 
+@@ -21,7 +25,7 @@
+ 
+ 	partition@20000 {
+ 		label = "ubi";
+-		reg = <0x20000 0xffe0000>;
++		reg = <0x20000 0x0>;
+ 		compatible = "linux,ubi";
+ 
+ 		volumes {
