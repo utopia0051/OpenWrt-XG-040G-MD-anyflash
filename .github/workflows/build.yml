@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout patch set
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: patchset
 
@@ -83,7 +83,7 @@ jobs:
           ls -lh bin/targets/airoha/an7581/
 
       - name: Upload firmware
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openwrt-xg-040g-md-ubi
           path: |
