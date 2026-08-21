@@ -1,0 +1,4 @@
+# The workflow, the seed config and the feed list are all consumed by a Linux
+# runner. Git's autocrlf would otherwise rewrite them to CRLF on this machine
+# and the here-doc in the verify step would compare against lines ending in \r.
+* text=auto eol=lf

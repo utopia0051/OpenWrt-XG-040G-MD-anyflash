@@ -1,13 +1,121 @@
+# Nokia XG-040G-MD (UBI) - target selection
 CONFIG_TARGET_airoha=y
 CONFIG_TARGET_airoha_an7581=y
 CONFIG_TARGET_airoha_an7581_DEVICE_nokia_xg-040g-md-ubi=y
+
+# --- LuCI with HTTPS ---
+# luci-ssl pulls uhttpd-mod-tls + px5g for the self-signed cert.
 CONFIG_PACKAGE_luci=y
-CONFIG_PACKAGE_luci-app-firewall=y
-CONFIG_PACKAGE_luci-proto-ppp=y
 CONFIG_PACKAGE_luci-ssl=y
+CONFIG_PACKAGE_px5g-mbedtls=y
+
+# --- keep the stock Bootstrap theme alongside Argon ---
+CONFIG_PACKAGE_luci-theme-bootstrap=y
+
+# --- Argon theme + its settings page (external feed, see feeds.conf) ---
+# luci-theme-argon declares "+USE_APK:wget-any +!USE_APK:wget +jsonfilter";
+# snapshot builds use APK, so wget-any must be satisfied by a real wget.
+CONFIG_PACKAGE_luci-theme-argon=y
+CONFIG_PACKAGE_luci-app-argon-config=y
+CONFIG_PACKAGE_wget-ssl=y
+CONFIG_PACKAGE_jsonfilter=y
+
+# --- Chinese (Simplified) translations ---
+CONFIG_LUCI_LANG_zh_Hans=y
+CONFIG_PACKAGE_luci-i18n-base-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-firewall-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-package-manager-zh-cn=y
+CONFIG_PACKAGE_luci-i18n-argon-config-zh-cn=y
+
+# --- firewall (nftables) ---
+CONFIG_PACKAGE_firewall4=y
+CONFIG_PACKAGE_luci-app-firewall=y
+
+# --- OpenClash ---
+# The package Makefile's DEPENDS list is reproduced here so defconfig cannot
+# silently drop something. Chinese strings are compiled into the main package
+# from po/zh-cn, so there is no separate luci-i18n-openclash-* to select.
+CONFIG_PACKAGE_luci-app-openclash=y
+CONFIG_PACKAGE_bash=y
+CONFIG_PACKAGE_curl=y
+CONFIG_PACKAGE_ca-bundle=y
+CONFIG_PACKAGE_unzip=y
+CONFIG_PACKAGE_ip-full=y
+CONFIG_PACKAGE_ruby=y
+CONFIG_PACKAGE_ruby-yaml=y
+CONFIG_PACKAGE_kmod-tun=y
+CONFIG_PACKAGE_kmod-inet-diag=y
+CONFIG_PACKAGE_kmod-nft-tproxy=y
+# The OpenClash menu entries come from a Lua controller, so the sidebar stays
+# empty without the legacy dispatcher. luci-compat pulls luci-lua-runtime.
+CONFIG_PACKAGE_luci-compat=y
+CONFIG_PACKAGE_luci-lib-ipkg=y
+# The init script backgrounds the core with nohup, which busybox omits by default.
+CONFIG_BUSYBOX_CONFIG_NOHUP=y
+
+# --- what OpenClash's own online updater needs at runtime ---
+# openclash_update.sh installs the new .apk with
+#   apk add -q --force-overwrite --clean-protected --allow-untrusted
+# after an "apk update", so the package manager and a working TLS stack have to
+# be in the image. This build uses APK (CONFIG_USE_APK defaults to y).
+CONFIG_PACKAGE_apk-mbedtls=y
+CONFIG_PACKAGE_libustream-mbedtls=y
+CONFIG_PACKAGE_ca-certificates=y
+# The updater re-installs whatever it found before the upgrade, from the list
+# "luci-compat kmod-inet-diag kmod-nft-tproxy kmod-ipt-nat iptables-mod-tproxy
+# iptables-mod-extra ipset". The first three are already selected above; the
+# iptables ones only apply to firewall3 builds and are deliberately left out.
+#
+# The dashboard downloader calls "unzip -q", which needs the real unzip, and the
+# core downloader calls "gzip -dc", which busybox already provides.
+#
+# Version checks parse JSON with jsonfilter (selected in the Argon block) and the
+# watchdog reads ubus output through it too.
+CONFIG_PACKAGE_jsonfilter=y
+# YAML.rb aliases Psych's unsafe_load, so ruby-yaml must bring psych along.
+CONFIG_PACKAGE_ruby-psych=y
+CONFIG_PACKAGE_ruby-pstore=y
+# Subscription parsing goes through luci.jsonc and nixio from the Lua runtime.
+CONFIG_PACKAGE_luci-lib-jsonc=y
+CONFIG_PACKAGE_luci-lib-nixio=y
+
+# --- ttyd (web terminal) ---
+CONFIG_PACKAGE_ttyd=y
+CONFIG_PACKAGE_luci-app-ttyd=y
+CONFIG_PACKAGE_luci-i18n-ttyd-zh-cn=y
+
+# --- DDNSTO (linkease feeds) ---
+CONFIG_PACKAGE_ddnsto=y
+CONFIG_PACKAGE_luci-app-ddnsto=y
+CONFIG_PACKAGE_luci-i18n-ddnsto-zh-cn=y
+
+# --- dnsmasq: DHCP / DNS / IPv6 ---
+# dnsmasq-full replaces the default trimmed dnsmasq and enables DHCPv6/RA.
+# The two are alternatives, so the default one has to be dropped explicitly.
+# CONFIG_PACKAGE_dnsmasq is not set
+CONFIG_PACKAGE_dnsmasq_full_dhcpv6=y
+CONFIG_PACKAGE_dnsmasq_full_auth=y
+CONFIG_PACKAGE_dnsmasq_full_ipset=y
+# OpenClash drives dnsmasq through nftables sets when firewall4 is in use.
+CONFIG_PACKAGE_dnsmasq_full_nftset=y
+CONFIG_PACKAGE_dnsmasq-full=y
+CONFIG_PACKAGE_odhcp6c=y
+CONFIG_PACKAGE_odhcpd-ipv6only=y
+CONFIG_PACKAGE_luci-proto-ipv6=y
+CONFIG_PACKAGE_luci-proto-ppp=y
+
+# --- read the BL2 DRAM-calibration word at SCU 0x1FB00284 ---
+# The generic kernel config ships "# CONFIG_DEVMEM is not set", so /dev/mem
+# does not exist and busybox devmem cannot work without both of these.
+CONFIG_KERNEL_DEVMEM=y
+CONFIG_BUSYBOX_CUSTOM=y
+CONFIG_BUSYBOX_CONFIG_DEVMEM=y
+
+# --- convenience ---
+CONFIG_PACKAGE_htop=y
+CONFIG_PACKAGE_nano=y
+CONFIG_PACKAGE_block-mount=y
 CONFIG_PACKAGE_kmod-usb-storage=y
 CONFIG_PACKAGE_kmod-fs-ext4=y
 CONFIG_PACKAGE_kmod-fs-vfat=y
-CONFIG_PACKAGE_block-mount=y
-CONFIG_PACKAGE_htop=y
-CONFIG_PACKAGE_nano=y
+CONFIG_PACKAGE_zoneinfo-asia=y
